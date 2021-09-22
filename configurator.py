@@ -421,6 +421,8 @@ def get_g2_database_url_specific(generic_database_url):
         result = "{scheme}://{username}:{password}@{schema}".format(**parsed_database_url)
     elif scheme in ['sqlite3']:
         result = "{scheme}://{netloc}{path}".format(**parsed_database_url)
+    elif scheme in ['mssql']:
+        result = "{scheme}://{username}:{password}@{schema}".format(**parsed_database_url)
     else:
         logging.error(message_error(695, scheme, generic_database_url))
 
