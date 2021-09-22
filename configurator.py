@@ -4,9 +4,8 @@
 # configurator.py
 # -----------------------------------------------------------------------------
 
-from glob import glob
-from urllib.parse import urlparse, urlunparse
-from urllib.request import urlopen
+# Import from standard library. https://docs.python.org/3/library/
+
 import argparse
 import json
 import linecache
@@ -17,27 +16,32 @@ import signal
 import string
 import sys
 import time
+from urllib.parse import urlparse, urlunparse
+from urllib.request import urlopen
 
-# Import Senzing libraries.
+# Import from https://pypi.org/
+
+from flask import Flask, Response, json
+from flask import request as flask_request
+from flask import url_for
+from flask_api import status
+
+# Import from Senzing
 
 try:
+    import G2Exception
     from G2Config import G2Config
     from G2ConfigMgr import G2ConfigMgr
     from G2Engine import G2Engine
-    import G2Exception
 except ImportError:
     pass
-
-from flask import Flask, json, Response, url_for
-from flask import request as flask_request
-from flask_api import status
 
 app = Flask(__name__)
 
 __all__ = []
-__version__ = "1.0.0"  # See https://www.python.org/dev/peps/pep-0396/
+__version__ = "1.1.0"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2020-01-24'
+__updated__ = '2021-09-22'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/master/lists/senzing-product-ids.md
 log_format = '%(asctime)s %(message)s'
@@ -267,7 +271,7 @@ def message_info(index, *args):
     return message_generic(MESSAGE_INFO, index, *args)
 
 
-def message_warn(index, *args):
+def message_warning(index, *args):
     return message_generic(MESSAGE_WARN, index, *args)
 
 
@@ -692,7 +696,7 @@ class G2Client:
             g2_engine.initWithConfigIDV2(g2_engine_name, g2_configuration_json, configuration_id, self.config.get('debug', False))
         except G2Exception.G2Exception as err:
             result = False
-            logging.warning(message_warning(301, configuration_id_bytearray.decode(), err))
+            logging.warning(message_warning(301, g2_configuration_json, err))
 
         # Test engine search.
 
@@ -705,7 +709,7 @@ class G2Client:
             g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
         except G2Exception.G2Exception as err:
             result = False
-            logging.warning(message_warning(302, configuration_id_bytearray.decode(), err))
+            logging.warning(message_warning(302, flags, err))
 
         # Log a successful result.
 
@@ -738,7 +742,7 @@ class G2Initializer:
         except Exception as err:
             raise Exception("G2ConfigMgr.getDefaultConfigID({0}) failed".format(default_config_id_bytearray)) from err
         if return_code != 0:
-            raise Exception("G2ConfigMgr.getDefaultConfigID({0}) return code {1}".format(default_config_id_bytearray, return_code)) from err
+            raise Exception("G2ConfigMgr.getDefaultConfigID({0}) return code {1}".format(default_config_id_bytearray, return_code))
 
         # If a default configuration exists, there is nothing more to do.
 
@@ -754,7 +758,7 @@ class G2Initializer:
         except Exception as err:
             raise Exception("G2Confg.save({0}, {1}) failed".format(config_handle, configuration_bytearray)) from err
         if return_code != 0:
-            raise Exception("G2Confg.save({0}, {1}) return code {2}".format(config_handle, configuration_bytearray, return_code)) from err
+            raise Exception("G2Confg.save({0}, {1}) return code {2}".format(config_handle, configuration_bytearray, return_code))
 
         self.g2_config.close(config_handle)
 
@@ -767,7 +771,7 @@ class G2Initializer:
         except Exception as err:
             raise Exception("G2ConfigMgr.addConfig({0}, {1}, {2}) failed".format(configuration_bytearray.decode(), config_comment, new_config_id)) from err
         if return_code != 0:
-            raise Exception("G2ConfigMgr.addConfig({0}, {1}, {2}) return code {3}".format(configuration_bytearray.decode(), config_comment, new_config_id, return_code)) from err
+            raise Exception("G2ConfigMgr.addConfig({0}, {1}, {2}) return code {3}".format(configuration_bytearray.decode(), config_comment, new_config_id, return_code))
 
         # Set the default configuration ID.
 
@@ -776,7 +780,7 @@ class G2Initializer:
         except Exception as err:
             raise Exception("G2ConfigMgr.setDefaultConfigID({0}) failed".format(new_config_id)) from err
         if return_code != 0:
-            raise Exception("G2ConfigMgr.setDefaultConfigID({0}) return code {1}".format(new_config_id, return_code)) from err
+            raise Exception("G2ConfigMgr.setDefaultConfigID({0}) return code {1}".format(new_config_id, return_code))
 
 # -----------------------------------------------------------------------------
 # Utility functions
