@@ -54,9 +54,9 @@ GIGABYTES = 1024 * MEGABYTES
 
 # Lists from https://www.ietf.org/rfc/rfc1738.txt
 
-safe_character_list = ['$', '-', '_', '.', '+', '!', '*', '(', ')', ',', '"' ] + list(string.ascii_letters)
-unsafe_character_list = [ '"', '<', '>', '#', '%', '{', '}', '|', '\\', '^', '~', '[', ']', '`']
-reserved_character_list = [ ';', ',', '/', '?', ':', '@', '=', '&']
+safe_character_list = ['$', '-', '_', '.', '+', '!', '*', '(', ')', ',', '"'] + list(string.ascii_letters)
+unsafe_character_list = ['"', '<', '>', '#', '%', '{', '}', '|', '\\', '^', '~', '[', ']', '`']
+reserved_character_list = [';', ',', '/', '?', ':', '@', '=', '&']
 
 # The "configuration_locator" describes where configuration variables are in:
 # 1) Command line options, 2) Environment variables, 3) Configuration files, 4) Default values
@@ -607,7 +607,7 @@ class G2Client:
 
         # Find the "config_handle" of the configuration,  creating a new configuration if needed.
 
-        if  config_id_bytearray:
+        if config_id_bytearray:
             config_id_int = int(config_id_bytearray)
             configuration_bytearray = bytearray()
             self.g2_configuration_manager.getConfig(config_id_int, configuration_bytearray)
@@ -940,7 +940,7 @@ def get_g2_client(config):
 
     # Create g2_client object.
 
-    return  G2Client(config, g2_engine, g2_configuration_manager, g2_config)
+    return G2Client(config, g2_engine, g2_configuration_manager, g2_config)
 
 # -----------------------------------------------------------------------------
 # Worker functions
