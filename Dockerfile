@@ -78,6 +78,15 @@ EXPOSE 8253
 
 USER 1001
 
+# Make sure all messages always reach console.
+
+ENV PYTHONUNBUFFERED=1
+
+# Activate virtual environment.
+
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
 # Set environment variables for USER 1001.
 
 ENV LD_LIBRARY_PATH=/opt/senzing/g2/lib:/opt/senzing/g2/lib/debian:/opt/IBM/db2/clidriver/lib
