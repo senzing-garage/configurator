@@ -1,14 +1,14 @@
 version: '3'
 services:
 
-  resolver:
+  configurator:
     container_name: senzing-configurator
     environment:
 #     See https://github.com/Senzing/configurator#configuration
       SENZING_DATABASE_URL: ${SENZING_DATABASE_URL}
     image: senzing/configurator:${SENZING_DOCKER_IMAGE_VERSION_CONFIGURATOR:-latest}
     networks:
-      - backend
+      - postgresql_backend
     ports:
       - 8253:8253
     read_only: true
