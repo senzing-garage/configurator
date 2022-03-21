@@ -721,14 +721,8 @@ class G2Client:
     def test_configuration(self, configuration_id):
         result = True
 
-        # Test engine initialization.
-
-        g2_engine_name = "Test g2_engine"
-        g2_configuration_json = self.get_g2_configuration_json()
-        g2_engine = G2Engine()
-
         try:
-            g2_engine.initWithConfigID(g2_engine_name, g2_configuration_json, configuration_id, self.config.get('debug', False))
+            self.g2_engine.initWithConfigID(g2_engine_name, g2_configuration_json, configuration_id, self.config.get('debug', False))
         except G2Exception as err:
             result = False
             logging.warning(message_warning(301, g2_configuration_json, err))
@@ -741,7 +735,7 @@ class G2Client:
         response_bytearray = bytearray()
 
         try:
-            g2_engine.searchByAttributes(data_as_json, flags, response_bytearray)
+            self.g2_engine.searchByAttributes(data_as_json, flags, response_bytearray)
         except G2Exception as err:
             result = False
             logging.warning(message_warning(302, flags, err))
