@@ -911,11 +911,7 @@ def get_g2_config(config, g2_config_name="configurator-G2-config"):
         # Backport methods from earlier Senzing versions.
 
         if config.get('senzing_sdk_version_major') == 2:
-            result.addDataSource = result.addDataSourceV2
-            result.addEntityType = result.addEntityTypeV2
             result.init = result.initV2
-            result.listDataSources = result.listDataSourcesV2
-            result.listDataSources = result.listDataSourcesV2
 
         # Initialize G2ConfigMgr.
 
