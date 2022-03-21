@@ -622,8 +622,8 @@ class G2Client:
         # Add data sources to configuration.
 
 
-        response_bytearray = bytearray()
         for datasource in datasources:
+            response_bytearray = bytearray()
             self.g2_config.addDataSource(config_handle, datasource, response_bytearray)
             logging.info(message_info(101, datasource,  response_bytearray.decode()))
 
