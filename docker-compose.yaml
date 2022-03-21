@@ -20,4 +20,6 @@ services:
       - ${SENZING_VAR_DIR:-/var/opt/senzing}:/var/opt/senzing
 
 networks:
-  backend:
+  senzing:
+    external:
+      name: postgresql_backend
