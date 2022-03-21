@@ -773,11 +773,9 @@ class G2Initializer:
 
         default_config_id_bytearray = bytearray()
         try:
-            return_code = self.g2_configuration_manager.getDefaultConfigID(default_config_id_bytearray)
+            self.g2_configuration_manager.getDefaultConfigID(default_config_id_bytearray)
         except Exception as err:
             raise Exception("G2ConfigMgr.getDefaultConfigID({0}) failed".format(default_config_id_bytearray)) from err
-        if return_code != 0:
-            raise Exception("G2ConfigMgr.getDefaultConfigID({0}) return code {1}".format(default_config_id_bytearray, return_code))
 
         # If a default configuration exists, there is nothing more to do.
 
