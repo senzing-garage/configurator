@@ -3,6 +3,9 @@ services:
 
   resolver:
     container_name: senzing-configurator
+    environment:
+#     See https://github.com/Senzing/configurator#configuration
+      SENZING_DATABASE_URL: ${SENZING_DATABASE_URL}
     image: senzing/configurator:${SENZING_DOCKER_IMAGE_VERSION_CONFIGURATOR:-latest}
     networks:
       - backend
