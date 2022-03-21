@@ -53,6 +53,7 @@ except:
 
         class G2EngineFlags(IntFlag):
             G2_EXPORT_DEFAULT_FLAGS = G2Engine.G2_EXPORT_DEFAULT_FLAGS
+
         senzing_sdk_version_major = 2
 
     except:
@@ -612,7 +613,6 @@ class G2Client:
 
         self.datasources = self.get_datasources()
         self.entity_types = self.datasources.copy()
-
 
     def add_datasources(self, datasources):
         ''' Add a data source to G2 configuration. '''

@@ -45,11 +45,11 @@ RUN pip3 install --upgrade pip \
 
 FROM ${BASE_IMAGE} AS runner
 
-ENV REFRESHED_AT=2022-03-17
+ENV REFRESHED_AT=2022-03-21
 
-LABEL Name="senzing/redoer" \
+LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
-      Version="1.4.7"
+      Version="1.1.3"
 
 # Define health check.
 
