@@ -1117,12 +1117,6 @@ def do_service(args):
     port = config.get('port')
     debug = config.get('debug')
 
-    # Prime the pump.
-
-    handle_post_resolver([])
-    g2_engine = get_g2_engine(config)
-    g2_engine.primeEngine()
-
     # Run the service application.
 
     app.run(host=host, port=port, debug=debug, threaded=False)
