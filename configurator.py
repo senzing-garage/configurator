@@ -237,7 +237,7 @@ MESSAGE_DEBUG = 900
 
 message_dictionary = {
     "100": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}I",
-    "101": "Adding datasource '{0}'",
+    "101": "Adding datasource '{0}'. Response: {1}",
     "102": "Adding entity type '{0}'",
     "104": "CONFIG_DATA_ID: {0} plus datasources: {1}",
     "105": "CONFIG_DATA_ID: {0} passed validity tests.",
@@ -621,9 +621,11 @@ class G2Client:
 
         # Add data sources to configuration.
 
+
+        response_bytearray = bytearray()
         for datasource in datasources:
-            self.g2_config.addDataSource(config_handle, datasource)
-            logging.info(message_info(101, datasource))
+            self.g2_config.addDataSource(config_handle, datasource, response_bytearray)
+            logging.info(message_info(101, datasource,  response_bytearray.decode()))
 
         config_id = self.get_default_config_id()
         configuration_comment = message(104, config_id, datasources)
