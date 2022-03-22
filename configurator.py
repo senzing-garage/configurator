@@ -64,7 +64,7 @@ app = Flask(__name__)
 __all__ = []
 __version__ = "1.1.3"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2022-03-21'
+__updated__ = '2022-03-22'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/master/lists/senzing-product-ids.md
 log_format = '%(asctime)s %(message)s'
@@ -618,12 +618,16 @@ class G2Client:
         ''' Add a data source to G2 configuration. '''
 
         config_handle = self.get_config_handle()
+        response_bytearray = bytearray()
 
         # Add data sources to configuration.
 
         for datasource in datasources:
-            response_bytearray = bytearray()
-            self.g2_config.addDataSource(config_handle, datasource, response_bytearray)
+            data_source_dictionary = {
+                "DSRC_CODE": data_source
+            }
+            data_source_json = json.dumps(data_source_dictionary)
+            self.g2_config.addDataSource(config_handle, data_source_json, response_bytearray)
             logging.info(message_info(101, datasource, response_bytearray.decode()))
 
         config_id = self.get_default_config_id()
@@ -658,13 +662,10 @@ class G2Client:
         ''' Determine datasources already defined. '''
 
         config_handle = self.get_config_handle()
-
-        # Get list of existing datasources.
-
         datasources_bytearray = bytearray()
-        return_code = self.g2_config.listDataSources(config_handle, datasources_bytearray)
+        self.g2_config.listDataSources(config_handle, datasources_bytearray)
         datasources_dictionary = json.loads(datasources_bytearray.decode())
-        return datasources_dictionary.get('DSRC_CODE', [])
+        return [x.get("DSRC_CODE") for x in datasources_dictionary.get("DATA_SOURCES")]
 
     def get_default_config_id(self):
         ''' Get the current configuration id.  SYS_CFG.CONFIG_DATA_ID'''
@@ -911,7 +912,9 @@ def get_g2_config(config, g2_config_name="configurator-G2-config"):
         # Backport methods from earlier Senzing versions.
 
         if config.get('senzing_sdk_version_major') == 2:
+            result.addDataSource = result.addDataSourceV2
             result.init = result.initV2
+            result.listDataSources = result.listDataSourcesV2
 
         # Initialize G2ConfigMgr.
 
