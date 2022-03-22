@@ -624,7 +624,7 @@ class G2Client:
 
         for datasource in datasources:
             data_source_dictionary = {
-                "DSRC_CODE": data_source
+                "DSRC_CODE": datasource
             }
             data_source_json = json.dumps(data_source_dictionary)
             self.g2_config.addDataSource(config_handle, data_source_json, response_bytearray)
