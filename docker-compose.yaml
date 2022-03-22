@@ -22,4 +22,4 @@ services:
 networks:
   senzing:
     external:
-      name: ${SENZING_DOCKER_NETWORK:-postgresql_backend}
+      name: ${SENZING_DOCKER_NETWORK:-senzing-network}
