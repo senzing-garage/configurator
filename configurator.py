@@ -742,7 +742,7 @@ class G2Client:
         response_bytearray = bytearray()
 
         try:
-            self.g2_engine.searchByAttributes(data_as_json, flags, response_bytearray)
+            self.g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
         except G2Exception as err:
             result = False
             logging.warning(message_warning(302, flags, err))
@@ -967,9 +967,8 @@ def get_g2_engine(config, g2_engine_name="configurator-G2-engine"):
 
         if config.get('senzing_sdk_version_major') == 2:
             result.init = result.initV2
-            result.reinit = result.reinitV2
             result.initWithConfigID = result.initWithConfigIDV2
-            result.searchByAttributes = result.searchByAttributesV2
+            result.reinit = result.reinitV2
 
         # Initialize G2Engine.
 
