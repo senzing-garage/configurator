@@ -621,11 +621,10 @@ class G2Client:
 
         # Add data sources to configuration.
 
-
         for datasource in datasources:
             response_bytearray = bytearray()
             self.g2_config.addDataSource(config_handle, datasource, response_bytearray)
-            logging.info(message_info(101, datasource,  response_bytearray.decode()))
+            logging.info(message_info(101, datasource, response_bytearray.decode()))
 
         config_id = self.get_default_config_id()
         configuration_comment = message(104, config_id, datasources)
