@@ -1,0 +1,25 @@
+version: '3'
+services:
+
+  configurator:
+    container_name: senzing-configurator
+    environment:
+#     See https://github.com/Senzing/configurator#configuration
+      SENZING_DATABASE_URL: ${SENZING_DATABASE_URL}
+    image: senzing/configurator:${SENZING_DOCKER_IMAGE_VERSION_CONFIGURATOR:-latest}
+    networks:
+      - senzing
+    ports:
+      - 8253:8253
+    read_only: true
+    restart: always
+    volumes:
+      - ${SENZING_DATA_VERSION_DIR:-/opt/senzing/data/2.0.0}:/opt/senzing/data
+      - ${SENZING_ETC_DIR:-/etc/opt/senzing}:/etc/opt/senzing
+      - ${SENZING_G2_DIR:-/opt/senzing/g2}:/opt/senzing/g2
+      - ${SENZING_VAR_DIR:-/var/opt/senzing}:/var/opt/senzing
+
+networks:
+  senzing:
+    external:
+      name: ${SENZING_DOCKER_NETWORK:-senzing-network}

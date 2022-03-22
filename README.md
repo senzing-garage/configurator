@@ -58,6 +58,11 @@ To see the options for a subcommand, run commands like:
     1. [Database support](#database-support)
     1. [Run docker container](#run-docker-container)
     1. [Test docker container](#test-docker-container)
+1. [Demonstrate using docker-compose](#demonstrate-using-docker-compose)
+    1. [Prerequisite docker-compose stack](#prerequisite-docker-compose-stack)
+    1. [docker-compose database](#docker-compose-database)
+    1. [docker-compose volumes](#docker-compose-volumes)
+    1. [Bring up docker-compose stack](#bring-up-docker-compose-stack)
 1. [Demonstrate using Helm](#demonstrate-using-helm)
     1. [Prerequisite software for Helm demonstration](#prerequisite-software-for-helm-demonstration)
     1. [Clone repository for Helm demonstration](#clone-repository-for-helm-demonstration)
@@ -196,7 +201,7 @@ Configuration values specified by environment variable or command line parameter
 - **[SENZING_SUBCOMMAND](https://github.com/Senzing/knowledge-base/blob/master/lists/environment-variables.md#senzing_subcommand)**
 - **[SENZING_VAR_DIR](https://github.com/Senzing/knowledge-base/blob/master/lists/environment-variables.md#senzing_var_dir)**
 
-1. To determine which configuration parameters are used for each `<subcommand>`, run:
+1. To determine which configuration parameters are used for each `subcommand`, run:
 
     ```console
     ./configurator.py <subcommand> --help
@@ -210,7 +215,7 @@ Configuration values specified by environment variable or command line parameter
    Example:
 
     ```console
-    export SENZING_VOLUME=/opt/my-senzing
+    export SENZING_VOLUME=~/my-senzing
     ```
 
     1. Here's a simple test to see if `SENZING_VOLUME` is correct.
@@ -347,6 +352,66 @@ For other databases, these steps may be skipped.
       --data '[ "SEARCH", "TEST", "TEST1", "TEST2"]' \
       --header 'Content-type: application/json;charset=utf-8' \
       http://localhost:8253/datasources
+    ```
+
+## Demonstrate using docker-compose
+
+### Prerequisite docker-compose stack
+
+1. Bring up one of the Senzing docker-compose stacks seen in
+   [docker-compose-demo](https://github.com/Senzing/docker-compose-demo).
+
+### docker-compose database
+
+1. Specify the database connection URL used in the Senzing docker-compose stack.
+   *Note:*  The value will be the same as the `SENZING_DATABASE_URL` value used in the
+   [docker-compose-demo](https://github.com/Senzing/docker-compose-demo) stack.
+   Example:
+
+    ```console
+    export SENZING_DATABASE_URL=postgresql://postgres:postgres@senzing-postgres:5432/G2
+    ```
+
+### docker-compose volumes
+
+1. :pencil2: Specify the directory containing the Senzing installation.
+   *Note:*  The value will be the same as the `SENZING_VOLUME` value used in the
+   [docker-compose-demo](https://github.com/Senzing/docker-compose-demo) stack.
+   Example:
+
+    ```console
+    export SENZING_VOLUME=~/my-senzing
+    ```
+
+1. Identify the `data_version`, `etc`, `g2`, and `var` directories.
+   Example:
+
+    ```console
+    export SENZING_DATA_VERSION_DIR=${SENZING_VOLUME}/data/2.0.0
+    export SENZING_ETC_DIR=${SENZING_VOLUME}/etc
+    export SENZING_G2_DIR=${SENZING_VOLUME}/g2
+    export SENZING_VAR_DIR=${SENZING_VOLUME}/var
+    ```
+
+### Bring up docker-compose stack
+
+1. Set these environment variable values:
+
+    ```console
+    export GIT_ACCOUNT=senzing
+    export GIT_REPOSITORY=configurator
+    export GIT_ACCOUNT_DIR=~/${GIT_ACCOUNT}.git
+    export GIT_REPOSITORY_DIR="${GIT_ACCOUNT_DIR}/${GIT_REPOSITORY}"
+    ```
+
+1. Bring up `docker-compose.yaml`.
+   Example:
+
+    ```console
+    cd ${GIT_REPOSITORY_DIR}
+    sudo \
+      --preserve-env \
+      docker-compose up
     ```
 
 ## Demonstrate using Helm

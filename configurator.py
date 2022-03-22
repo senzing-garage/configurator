@@ -16,6 +16,7 @@ import signal
 import string
 import sys
 import time
+from enum import IntFlag
 from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 
@@ -26,22 +27,44 @@ from flask import request as flask_request
 from flask import url_for
 from flask_api import status
 
-# Import from Senzing
+# Import Senzing libraries.
+
+# Determine "Major" version of Senzing SDK.
+
+senzing_sdk_version_major = None
+
+# Import from Senzing.
 
 try:
-    import G2Exception
-    from G2Config import G2Config
-    from G2ConfigMgr import G2ConfigMgr
-    from G2Engine import G2Engine
-except ImportError:
-    pass
+    from senzing import G2Config, G2ConfigMgr, G2Engine, G2EngineFlags, G2Exception, G2ModuleException
+    senzing_sdk_version_major = 3
+
+except:
+
+    # Fall back to pre-Senzing-Python-SDK style of imports.
+
+    try:
+        from G2Config import G2Config
+        from G2ConfigMgr import G2ConfigMgr
+        from G2Engine import G2Engine
+        from G2Exception import G2Exception, G2ModuleException
+
+        # Create a class like what is seen in Senzing Version 3.
+
+        class G2EngineFlags(IntFlag):
+            G2_EXPORT_DEFAULT_FLAGS = G2Engine.G2_EXPORT_DEFAULT_FLAGS
+
+        senzing_sdk_version_major = 2
+
+    except:
+        senzing_sdk_version_major = None
 
 app = Flask(__name__)
 
 __all__ = []
-__version__ = "1.1.0"  # See https://www.python.org/dev/peps/pep-0396/
+__version__ = "1.1.3"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2021-09-22'
+__updated__ = '2022-03-22'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/master/lists/senzing-product-ids.md
 log_format = '%(asctime)s %(message)s'
@@ -214,7 +237,7 @@ MESSAGE_DEBUG = 900
 
 message_dictionary = {
     "100": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}I",
-    "101": "Adding datasource '{0}'",
+    "101": "Adding datasource '{0}'. Response: {1}",
     "102": "Adding entity type '{0}'",
     "104": "CONFIG_DATA_ID: {0} plus datasources: {1}",
     "105": "CONFIG_DATA_ID: {0} passed validity tests.",
@@ -252,6 +275,7 @@ message_dictionary = {
     "898": "Could not initialize G2Engine with '{0}'. Error: {1}",
     "899": "{0}",
     "900": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}D",
+    "998": "Debugging enabled.",
     "999": "{0}",
 }
 
@@ -461,6 +485,12 @@ def get_configuration(args):
         if value:
             result[new_key] = value
 
+    # Add program information.
+
+    result['program_version'] = __version__
+    result['program_updated'] = __updated__
+    result['senzing_sdk_version_major'] = senzing_sdk_version_major
+
     # Special case: subcommand from command-line
 
     if args.subcommand:
@@ -516,7 +546,6 @@ def get_configuration(args):
         config['g2_database_url_specific'] = "sqlite3://na:na@{0}".format(g2_internal_database_path)
     else:
         result['g2_database_url_specific'] = get_g2_database_url_specific(result.get("g2_database_url_generic"))
-
     return result
 
 
@@ -553,7 +582,7 @@ def validate_configuration(config):
     # If there are error messages, exit.
 
     if len(user_error_messages) > 0:
-        exit_error(597)
+        exit_error(697)
 
 
 def redact_configuration(config):
@@ -578,6 +607,10 @@ class G2Client:
         self.g2_config = g2_config
         self.g2_configuration_manager = g2_configuration_manager
         self.g2_engine = g2_engine
+        self.senzing_sdk_version_major = config.get("senzing_sdk_version_major")
+
+        # Must run after instance variable are set.
+
         self.datasources = self.get_datasources()
         self.entity_types = self.datasources.copy()
 
@@ -585,12 +618,17 @@ class G2Client:
         ''' Add a data source to G2 configuration. '''
 
         config_handle = self.get_config_handle()
+        response_bytearray = bytearray()
 
         # Add data sources to configuration.
 
         for datasource in datasources:
-            self.g2_config.addDataSource(config_handle, datasource)
-            logging.info(message_info(101, datasource))
+            data_source_dictionary = {
+                "DSRC_CODE": datasource
+            }
+            data_source_json = json.dumps(data_source_dictionary)
+            self.g2_config.addDataSource(config_handle, data_source_json, response_bytearray)
+            logging.info(message_info(101, datasource, response_bytearray.decode()))
 
         config_id = self.get_default_config_id()
         configuration_comment = message(104, config_id, datasources)
@@ -605,7 +643,7 @@ class G2Client:
         # Determine if a default configuration exists.
 
         config_id_bytearray = bytearray()
-        return_code = self.g2_configuration_manager.getDefaultConfigID(config_id_bytearray)
+        self.g2_configuration_manager.getDefaultConfigID(config_id_bytearray)
 
         # Find the "config_handle" of the configuration,  creating a new configuration if needed.
 
@@ -624,13 +662,10 @@ class G2Client:
         ''' Determine datasources already defined. '''
 
         config_handle = self.get_config_handle()
-
-        # Get list of existing datasources.
-
         datasources_bytearray = bytearray()
-        return_code = self.g2_config.listDataSources(config_handle, datasources_bytearray)
+        self.g2_config.listDataSources(config_handle, datasources_bytearray)
         datasources_dictionary = json.loads(datasources_bytearray.decode())
-        return datasources_dictionary.get('DSRC_CODE', [])
+        return [x.get("DSRC_CODE") for x in datasources_dictionary.get("DATA_SOURCES")]
 
     def get_default_config_id(self):
         ''' Get the current configuration id.  SYS_CFG.CONFIG_DATA_ID'''
@@ -683,7 +718,7 @@ class G2Client:
 
         # Re-initialize G2 engine.
 
-        self.g2_engine.reinitV2(configuration_id_bytearray)
+        self.g2_engine.reinit(configuration_id_bytearray)
 
     def test_configuration(self, configuration_id):
         result = True
@@ -692,11 +727,10 @@ class G2Client:
 
         g2_engine_name = "Test g2_engine"
         g2_configuration_json = self.get_g2_configuration_json()
-        g2_engine = G2Engine()
 
         try:
-            g2_engine.initWithConfigIDV2(g2_engine_name, g2_configuration_json, configuration_id, self.config.get('debug', False))
-        except G2Exception.G2Exception as err:
+            self.g2_engine.initWithConfigID(g2_engine_name, g2_configuration_json, configuration_id, self.config.get('debug', False))
+        except G2Exception as err:
             result = False
             logging.warning(message_warning(301, g2_configuration_json, err))
 
@@ -704,12 +738,12 @@ class G2Client:
 
         data = {}
         data_as_json = json.dumps(data)
-        flags = G2Engine.G2_EXPORT_DEFAULT_FLAGS
+        flags = G2EngineFlags.G2_EXPORT_DEFAULT_FLAGS
         response_bytearray = bytearray()
 
         try:
-            g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
-        except G2Exception.G2Exception as err:
+            self.g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
+        except G2Exception as err:
             result = False
             logging.warning(message_warning(302, flags, err))
 
@@ -723,7 +757,7 @@ class G2Client:
         return result
 
 # -----------------------------------------------------------------------------
-# Class: G2Client
+# Class: G2Initializer
 # -----------------------------------------------------------------------------
 
 
@@ -740,11 +774,9 @@ class G2Initializer:
 
         default_config_id_bytearray = bytearray()
         try:
-            return_code = self.g2_configuration_manager.getDefaultConfigID(default_config_id_bytearray)
+            self.g2_configuration_manager.getDefaultConfigID(default_config_id_bytearray)
         except Exception as err:
             raise Exception("G2ConfigMgr.getDefaultConfigID({0}) failed".format(default_config_id_bytearray)) from err
-        if return_code != 0:
-            raise Exception("G2ConfigMgr.getDefaultConfigID({0}) return code {1}".format(default_config_id_bytearray, return_code))
 
         # If a default configuration exists, there is nothing more to do.
 
@@ -840,7 +872,7 @@ def exit_error(index, *args):
 
 def exit_silently():
     ''' Exit program. '''
-    sys.exit(1)
+    sys.exit(0)
 
 # -----------------------------------------------------------------------------
 # Senzing services.
@@ -876,8 +908,18 @@ def get_g2_config(config, g2_config_name="configurator-G2-config"):
     try:
         g2_configuration_json = get_g2_configuration_json(config)
         result = G2Config()
-        result.initV2(g2_config_name, g2_configuration_json, config.get('debug', False))
-    except G2Exception.G2ModuleException as err:
+
+        # Backport methods from earlier Senzing versions.
+
+        if config.get('senzing_sdk_version_major') == 2:
+            result.addDataSource = result.addDataSourceV2
+            result.init = result.initV2
+            result.listDataSources = result.listDataSourcesV2
+
+        # Initialize G2ConfigMgr.
+
+        result.init(g2_config_name, g2_configuration_json, config.get('debug', False))
+    except G2ModuleException as err:
         exit_error(897, g2_configuration_json, err)
 
     g2_config_singleton = result
@@ -894,8 +936,16 @@ def get_g2_configuration_manager(config, g2_configuration_manager_name="configur
     try:
         g2_configuration_json = get_g2_configuration_json(config)
         result = G2ConfigMgr()
-        result.initV2(g2_configuration_manager_name, g2_configuration_json, config.get('debug', False))
-    except G2Exception.G2ModuleException as err:
+
+        # Backport methods from earlier Senzing versions.
+
+        if config.get('senzing_sdk_version_major') == 2:
+            result.init = result.initV2
+
+        # Initialize G2ConfigMgr.
+
+        result.init(g2_configuration_manager_name, g2_configuration_json, config.get('debug', False))
+    except G2ModuleException as err:
         exit_error(896, g2_configuration_json, err)
 
     g2_configuration_manager_singleton = result
@@ -912,8 +962,18 @@ def get_g2_engine(config, g2_engine_name="configurator-G2-engine"):
     try:
         g2_configuration_json = get_g2_configuration_json(config)
         result = G2Engine()
-        result.initV2(g2_engine_name, g2_configuration_json, config.get('debug', False))
-    except G2Exception.G2ModuleException as err:
+
+        # Backport methods from earlier Senzing versions.
+
+        if config.get('senzing_sdk_version_major') == 2:
+            result.init = result.initV2
+            result.initWithConfigID = result.initWithConfigIDV2
+            result.reinit = result.reinitV2
+
+        # Initialize G2Engine.
+
+        result.init(g2_engine_name, g2_configuration_json, config.get('debug', False))
+    except G2ModuleException as err:
         exit_error(898, g2_configuration_json, err)
 
     g2_engine_singleton = result
@@ -1053,6 +1113,8 @@ def do_service(args):
     port = config.get('port')
     debug = config.get('debug')
 
+    # Run the service application.
+
     app.run(host=host, port=port, debug=debug, threaded=False)
 
     # Epilog.
@@ -1119,6 +1181,7 @@ if __name__ == "__main__":
     log_level_parameter = os.getenv("SENZING_LOG_LEVEL", "info").lower()
     log_level = log_level_map.get(log_level_parameter, logging.INFO)
     logging.basicConfig(format=log_format, level=log_level)
+    logging.debug(message_debug(998))
 
     # Trap signals temporarily until args are parsed.
 
@@ -1159,7 +1222,7 @@ if __name__ == "__main__":
     # Test to see if function exists in the code.
 
     if subcommand_function_name not in globals():
-        logging.warning(message_warning(596, subcommand))
+        logging.warning(message_warning(696, subcommand))
         parser.print_help()
         exit_silently()
 

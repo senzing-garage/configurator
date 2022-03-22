@@ -1,15 +1,16 @@
 ARG BASE_IMAGE=debian:11.2-slim@sha256:4c25ffa6ef572cf0d57da8c634769a08ae94529f7de5be5587ec8ce7b9b50f9c
-FROM ${BASE_IMAGE} as builder
-
-ENV REFRESHED_AT=2022-02-08
-
-LABEL Name="senzing/configurator" \
-      Maintainer="support@senzing.com" \
-      Version="1.1.2"
 
 # -----------------------------------------------------------------------------
 # Stage: builder
 # -----------------------------------------------------------------------------
+
+FROM ${BASE_IMAGE} AS builder
+
+ENV REFRESHED_AT=2022-03-21
+
+LABEL Name="senzing/configurator" \
+      Maintainer="support@senzing.com" \
+      Version="1.1.3"
 
 # Run as "root" for system installation.
 
@@ -17,10 +18,10 @@ USER root
 
 RUN apt-get update \
  && apt-get -y install \
-    python3 \
-    python3-dev \
-    python3-venv \
-    python3-pip \
+      python3 \
+      python3-dev \
+      python3-pip \
+      python3-venv \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
 
@@ -40,7 +41,17 @@ RUN pip3 install --upgrade pip \
 # Stage: Final
 # -----------------------------------------------------------------------------
 
+# Create the runtime image.
+
 FROM ${BASE_IMAGE} AS runner
+
+ENV REFRESHED_AT=2022-03-21
+
+LABEL Name="senzing/configurator" \
+      Maintainer="support@senzing.com" \
+      Version="1.1.3"
+
+# Define health check.
 
 HEALTHCHECK CMD ["/app/healthcheck.sh"]
 
@@ -50,13 +61,14 @@ USER root
 
 # Install packages via apt.
 
-RUN apt update \
- && apt -y install \
+RUN apt-get update \
+ && apt-get -y install \
       librdkafka-dev \
+      libssl1.1 \
       libxml2 \
+      postgresql-client \
       python3 \
       python3-venv \
-      postgresql-client \
       unixodbc \
  && apt-get clean \
  && rm -rf /var/lib/apt/lists/*
@@ -64,7 +76,7 @@ RUN apt update \
 # Copy files from repository.
 
 COPY ./rootfs /
-COPY ./configurator.py /app
+COPY ./configurator.py /app/
 
 # Copy python virtual environment from the builder image.
 
@@ -78,26 +90,20 @@ EXPOSE 8253
 
 USER 1001
 
-# Make sure all messages always reach console.
-
-ENV PYTHONUNBUFFERED=1
-
 # Activate virtual environment.
 
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="/app/venv/bin:$PATH"
 
-# Set environment variables for USER 1001.
+# Runtime execution.
 
 ENV LD_LIBRARY_PATH=/opt/senzing/g2/lib:/opt/senzing/g2/lib/debian:/opt/IBM/db2/clidriver/lib
 ENV ODBCSYSINI=/etc/opt/senzing
 ENV PATH=${PATH}:/opt/senzing/g2/python:/opt/IBM/db2/clidriver/adm:/opt/IBM/db2/clidriver/bin
 ENV PYTHONPATH=/opt/senzing/g2/python
-ENV SENZING_ETC_PATH=/etc/opt/senzing
-
-# Runtime execution.
-
+ENV PYTHONUNBUFFERED=1
 ENV SENZING_DOCKER_LAUNCHED=true
+ENV SENZING_ETC_PATH=/etc/opt/senzing
 
 WORKDIR /app
 ENTRYPOINT ["/app/configurator.py"]
