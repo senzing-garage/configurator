@@ -59,7 +59,11 @@ except Exception:
     except Exception:
         SENZING_SDK_VERSION_MAJOR = None
 
+# Flask application.
+
 APP = Flask(__name__)
+
+# Metadata
 
 __all__ = []
 __version__ = "1.1.5"  # See https://www.python.org/dev/peps/pep-0396/
@@ -941,6 +945,7 @@ def get_g2_config(config, g2_config_name="configurator-G2-config"):
 
         if config.get('senzing_sdk_version_major') == 2:
             result.addDataSource = result.addDataSourceV2
+            result.addEntityType = result.addEntityTypeV2
             result.init = result.initV2
             result.listDataSources = result.listDataSourcesV2
 
@@ -1001,6 +1006,7 @@ def get_g2_engine(config, g2_engine_name="configurator-G2-engine"):
         # Initialize G2Engine.
 
         result.init(g2_engine_name, g2_configuration_json, config.get('debug', False))
+        config['last_configuration_check'] = time.time()
     except G2ModuleException as err:
         exit_error(898, g2_configuration_json, err)
 
@@ -1033,7 +1039,7 @@ def get_g2_client(config):
     return G2Client(config, g2_engine, g2_configuration_manager, g2_config)
 
 # -----------------------------------------------------------------------------
-# Worker functions
+# Utility functions
 # -----------------------------------------------------------------------------
 
 
