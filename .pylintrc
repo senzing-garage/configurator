@@ -1,0 +1,10 @@
+[pylint]
+disable=
+    broad-except,
+    global-statement,
+    import-error,
+    line-too-long,
+    too-few-public-methods,
+    too-many-branches,
+    too-many-lines,
+    too-many-locals,

@@ -1,8 +1,9 @@
 #! /usr/bin/env python3
 
-# -----------------------------------------------------------------------------
-# configurator.py
-# -----------------------------------------------------------------------------
+'''
+configurator.py
+ - Helps with Senzing configuration.
+'''
 
 # Import from standard library. https://docs.python.org/3/library/
 
@@ -18,28 +19,26 @@ import sys
 import time
 from enum import IntFlag
 from urllib.parse import urlparse, urlunparse
-from urllib.request import urlopen
 
 # Import from https://pypi.org/
 
 from flask import Flask, Response, json
 from flask import request as flask_request
-from flask import url_for
 from flask_api import status
 
 # Import Senzing libraries.
 
 # Determine "Major" version of Senzing SDK.
 
-senzing_sdk_version_major = None
+SENZING_SDK_VERSION_MAJOR = None
 
 # Import from Senzing.
 
 try:
     from senzing import G2Config, G2ConfigMgr, G2Engine, G2EngineFlags, G2Exception, G2ModuleException
-    senzing_sdk_version_major = 3
+    SENZING_SDK_VERSION_MAJOR = 3
 
-except:
+except Exception:
 
     # Fall back to pre-Senzing-Python-SDK style of imports.
 
@@ -52,14 +51,15 @@ except:
         # Create a class like what is seen in Senzing Version 3.
 
         class G2EngineFlags(IntFlag):
+            ''' Create an object similar to what is seen in Senzing V2. '''
             G2_EXPORT_DEFAULT_FLAGS = G2Engine.G2_EXPORT_DEFAULT_FLAGS
 
-        senzing_sdk_version_major = 2
+        SENZING_SDK_VERSION_MAJOR = 2
 
-    except:
-        senzing_sdk_version_major = None
+    except Exception:
+        SENZING_SDK_VERSION_MAJOR = None
 
-app = Flask(__name__)
+APP = Flask(__name__)
 
 __all__ = []
 __version__ = "1.1.5"  # See https://www.python.org/dev/peps/pep-0396/
@@ -67,7 +67,7 @@ __date__ = '2019-09-06'
 __updated__ = '2022-04-11'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/master/lists/senzing-product-ids.md
-log_format = '%(asctime)s %(message)s'
+LOG_FORMAT = '%(asctime)s %(message)s'
 
 # Working with bytes.
 
@@ -77,15 +77,15 @@ GIGABYTES = 1024 * MEGABYTES
 
 # Lists from https://www.ietf.org/rfc/rfc1738.txt
 
-safe_character_list = ['$', '-', '_', '.', '+', '!', '*', '(', ')', ',', '"'] + list(string.ascii_letters)
-unsafe_character_list = ['"', '<', '>', '#', '%', '{', '}', '|', '\\', '^', '~', '[', ']', '`']
-reserved_character_list = [';', ',', '/', '?', ':', '@', '=', '&']
+SAFE_CHARACTER_LIST = ['$', '-', '_', '.', '+', '!', '*', '(', ')', ',', '"'] + list(string.ascii_letters)
+UNSAFE_CHARACTER_LIST = ['"', '<', '>', '#', '%', '{', '}', '|', '\\', '^', '~', '[', ']', '`']
+RESERVED_CHARACTER_LIST = [';', ',', '/', '?', ':', '@', '=', '&']
 
 # The "configuration_locator" describes where configuration variables are in:
 # 1) Command line options, 2) Environment variables, 3) Configuration files, 4) Default values
 
-config = {}
-configuration_locator = {
+GLOBAL_CONFIG = {}
+CONFIGURATION_LOCATOR = {
     "config_path": {
         "default": "/etc/opt/senzing",
         "env": "SENZING_CONFIG_PATH",
@@ -134,16 +134,16 @@ configuration_locator = {
 
 # Enumerate keys in 'configuration_locator' that should not be printed to the log.
 
-keys_to_redact = [
+KEYS_TO_REDACT = [
     "g2_database_url_generic",
     "g2_database_url_specific"
 ]
 
 # Global cached objects
 
-g2_configuration_manager_singleton = None
-g2_engine_singleton = None
-g2_config_singleton = None
+G2_CONFIGURATION_MANAGER_SINGLETON = None
+G2_ENGINE_SINGLETON = None
+G2_CONFIG_SINGLETON = None
 
 # -----------------------------------------------------------------------------
 # Define argument parser
@@ -235,7 +235,7 @@ MESSAGE_WARN = 300
 MESSAGE_ERROR = 700
 MESSAGE_DEBUG = 900
 
-message_dictionary = {
+MESSAGE_DICTIONARY = {
     "100": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}I",
     "101": "Adding datasource '{0}'. Response: {1}",
     "102": "Adding entity type '{0}'",
@@ -275,35 +275,42 @@ message_dictionary = {
     "898": "Could not initialize G2Engine with '{0}'. Error: {1}",
     "899": "{0}",
     "900": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}D",
+    "901": "Signal: {0}; Frame: {1}",
+    "902": "Args: {0}; Frame: {1}",
     "998": "Debugging enabled.",
     "999": "{0}",
 }
 
 
 def message(index, *args):
+    ''' Return an instantiated message. '''
     index_string = str(index)
-    template = message_dictionary.get(index_string, "No message for index {0}.".format(index_string))
+    template = MESSAGE_DICTIONARY.get(index_string, "No message for index {0}.".format(index_string))
     return template.format(*args)
 
 
 def message_generic(generic_index, index, *args):
-    index_string = str(index)
+    ''' Return a formatted message. '''
     return "{0} {1}".format(message(generic_index, index), message(index, *args))
 
 
 def message_info(index, *args):
+    ''' Return an info message. '''
     return message_generic(MESSAGE_INFO, index, *args)
 
 
 def message_warning(index, *args):
+    ''' Return a warning message. '''
     return message_generic(MESSAGE_WARN, index, *args)
 
 
 def message_error(index, *args):
+    ''' Return an error message. '''
     return message_generic(MESSAGE_ERROR, index, *args)
 
 
 def message_debug(index, *args):
+    ''' Return a debug message. '''
     return message_generic(MESSAGE_DEBUG, index, *args)
 
 
@@ -329,24 +336,30 @@ def get_exception():
 # -----------------------------------------------------------------------------
 
 
-def translate(map, astring):
+def translate(mapping, astring):
+    ''' Translate characters. '''
+
     new_string = str(astring)
-    for key, value in map.items():
+    for key, value in mapping.items():
         new_string = new_string.replace(key, value)
     return new_string
 
 
 def get_unsafe_characters(astring):
+    ''' Return the list of unsafe characters found in astring. '''
+
     result = []
-    for unsafe_character in unsafe_character_list:
+    for unsafe_character in UNSAFE_CHARACTER_LIST:
         if unsafe_character in astring:
             result.append(unsafe_character)
     return result
 
 
 def get_safe_characters(astring):
+    ''' Return the list of safe characters found in astring. '''
+
     result = []
-    for safe_character in safe_character_list:
+    for safe_character in SAFE_CHARACTER_LIST:
         if safe_character not in astring:
             result.append(safe_character)
     return result
@@ -453,13 +466,13 @@ def get_g2_database_url_specific(generic_database_url):
     return result
 
 
-def get_configuration(args):
+def get_configuration(args, subcommand=None):
     ''' Order of precedence: CLI, OS environment variables, INI file, default. '''
     result = {}
 
     # Copy default values into configuration dictionary.
 
-    for key, value in list(configuration_locator.items()):
+    for key, value in list(CONFIGURATION_LOCATOR.items()):
         result[key] = value.get('default', None)
 
     # "Prime the pump" with command line args. This will be done again as the last step.
@@ -471,7 +484,7 @@ def get_configuration(args):
 
     # Copy OS environment variables into configuration dictionary.
 
-    for key, value in list(configuration_locator.items()):
+    for key, value in list(CONFIGURATION_LOCATOR.items()):
         os_env_var = value.get('env', None)
         if os_env_var:
             os_env_value = os.getenv(os_env_var, None)
@@ -489,7 +502,7 @@ def get_configuration(args):
 
     result['program_version'] = __version__
     result['program_updated'] = __updated__
-    result['senzing_sdk_version_major'] = senzing_sdk_version_major
+    result['senzing_sdk_version_major'] = SENZING_SDK_VERSION_MAJOR
 
     # Special case: subcommand from command-line
 
@@ -533,8 +546,8 @@ def get_configuration(args):
     # Special case:  Tailored database URL
     # If requested, prepare internal database.
 
-    if config.get('g2_internal_database'):
-        g2_internal_database_path = config.get('g2_internal_database')
+    if result.get('g2_internal_database'):
+        g2_internal_database_path = result.get('g2_internal_database')
         g2_internal_database_directory = os.path.dirname(g2_internal_database_path)
 
         try:
@@ -543,7 +556,7 @@ def get_configuration(args):
             pass
 
         shutil.copyfile("/var/opt/senzing/g2/data/G2C.db", g2_internal_database_path)
-        config['g2_database_url_specific'] = "sqlite3://na:na@{0}".format(g2_internal_database_path)
+        result['g2_database_url_specific'] = "sqlite3://na:na@{0}".format(g2_internal_database_path)
     else:
         result['g2_database_url_specific'] = get_g2_database_url_specific(result.get("g2_database_url_generic"))
     return result
@@ -588,10 +601,10 @@ def validate_configuration(config):
 def redact_configuration(config):
     ''' Return a shallow copy of config with certain keys removed. '''
     result = config.copy()
-    for key in keys_to_redact:
+    for key in KEYS_TO_REDACT:
         try:
             result.pop(key)
-        except:
+        except Exception:
             pass
     return result
 
@@ -601,6 +614,10 @@ def redact_configuration(config):
 
 
 class G2Client:
+    '''
+    Create a Facade software design pattern as a client of Senzing.
+    Synthesizes the use of G2Engine, G2Config, and G2ConfigurationManager.
+    '''
 
     def __init__(self, config, g2_engine, g2_configuration_manager, g2_config):
         self.config = config
@@ -697,7 +714,7 @@ class G2Client:
         # Get JSON string with new datasource added.
 
         configuration_bytearray = bytearray()
-        return_code = self.g2_config.save(config_handle, configuration_bytearray)
+        self.g2_config.save(config_handle, configuration_bytearray)
         configuration_json = configuration_bytearray.decode()
 
         # Add configuration to G2 database SYS_CFG table.
@@ -721,6 +738,8 @@ class G2Client:
         self.g2_engine.reinit(configuration_id_bytearray)
 
     def test_configuration(self, configuration_id):
+        ''' Test the configuration. '''
+
         result = True
 
         # Test engine initialization.
@@ -742,7 +761,7 @@ class G2Client:
         response_bytearray = bytearray()
 
         try:
-            if config.get('senzing_sdk_version_major') == 2:
+            if self.config.get('senzing_sdk_version_major') == 2:
                 self.g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
             else:
                 self.g2_engine.searchByAttributes(data_as_json, response_bytearray, flags)
@@ -765,6 +784,9 @@ class G2Client:
 
 
 class G2Initializer:
+    '''
+    Add a default Senzing configuration into the Senzing Model.
+    '''
 
     def __init__(self, g2_configuration_manager, g2_config):
         self.g2_config = g2_config
@@ -831,12 +853,15 @@ def create_signal_handler_function(args):
 
     def result_function(signal_number, frame):
         logging.info(message_info(298, args))
+        logging.debug(message_debug(901, signal_number, frame))
         sys.exit(0)
 
     return result_function
 
 
-def bootstrap_signal_handler(signal, frame):
+def bootstrap_signal_handler(signal_number, frame):
+    ''' Exit on signal error. '''
+    logging.debug(message_debug(901, signal_number, frame))
     sys.exit(0)
 
 
@@ -903,10 +928,10 @@ def get_g2_configuration_json(config):
 
 def get_g2_config(config, g2_config_name="configurator-G2-config"):
     ''' Get the G2Config resource. '''
-    global g2_config_singleton
+    global G2_CONFIG_SINGLETON
 
-    if g2_config_singleton:
-        return g2_config_singleton
+    if G2_CONFIG_SINGLETON:
+        return G2_CONFIG_SINGLETON
 
     try:
         g2_configuration_json = get_g2_configuration_json(config)
@@ -925,16 +950,16 @@ def get_g2_config(config, g2_config_name="configurator-G2-config"):
     except G2ModuleException as err:
         exit_error(897, g2_configuration_json, err)
 
-    g2_config_singleton = result
+    G2_CONFIG_SINGLETON = result
     return result
 
 
 def get_g2_configuration_manager(config, g2_configuration_manager_name="configurator-G2-configuration-manager"):
     ''' Get the G2ConfigMgr resource. '''
-    global g2_configuration_manager_singleton
+    global G2_CONFIGURATION_MANAGER_SINGLETON
 
-    if g2_configuration_manager_singleton:
-        return g2_configuration_manager_singleton
+    if G2_CONFIGURATION_MANAGER_SINGLETON:
+        return G2_CONFIGURATION_MANAGER_SINGLETON
 
     try:
         g2_configuration_json = get_g2_configuration_json(config)
@@ -951,16 +976,16 @@ def get_g2_configuration_manager(config, g2_configuration_manager_name="configur
     except G2ModuleException as err:
         exit_error(896, g2_configuration_json, err)
 
-    g2_configuration_manager_singleton = result
+    G2_CONFIGURATION_MANAGER_SINGLETON = result
     return result
 
 
 def get_g2_engine(config, g2_engine_name="configurator-G2-engine"):
     ''' Get the G2Engine resource. '''
-    global g2_engine_singleton
+    global G2_ENGINE_SINGLETON
 
-    if g2_engine_singleton:
-        return g2_engine_singleton
+    if G2_ENGINE_SINGLETON:
+        return G2_ENGINE_SINGLETON
 
     try:
         g2_configuration_json = get_g2_configuration_json(config)
@@ -979,7 +1004,7 @@ def get_g2_engine(config, g2_engine_name="configurator-G2-engine"):
     except G2ModuleException as err:
         exit_error(898, g2_configuration_json, err)
 
-    g2_engine_singleton = result
+    G2_ENGINE_SINGLETON = result
     return result
 
 
@@ -1014,7 +1039,7 @@ def get_g2_client(config):
 
 def get_config():
     ''' Singleton pattern for config. '''
-    return config
+    return GLOBAL_CONFIG
 
 
 def common_prolog(config):
@@ -1027,8 +1052,11 @@ def common_prolog(config):
 # -----------------------------------------------------------------------------
 
 
-@app.route("/datasources", methods=['GET'])
+@APP.route("/datasources", methods=['GET'])
 def http_get_datasources():
+    '''
+    List existing DataSources.
+    '''
 
     # Create g2_client object.
 
@@ -1047,8 +1075,11 @@ def http_get_datasources():
     return Response(response=response_pretty, status=response_status, mimetype=mimetype)
 
 
-@app.route("/datasources", methods=['POST'])
+@APP.route("/datasources", methods=['POST'])
 def http_post_datasources():
+    '''
+    Add a DataSource.
+    '''
 
     # Get the HTTP POST body as dictionary.
 
@@ -1118,7 +1149,7 @@ def do_service(args):
 
     # Run the service application.
 
-    app.run(host=host, port=port, debug=debug, threaded=False)
+    APP.run(host=host, port=port, debug=debug, threaded=False)
 
     # Epilog.
 
@@ -1161,6 +1192,7 @@ def do_version(args):
     ''' Log version information. '''
 
     logging.info(message_info(294, __version__, __updated__))
+    logging.debug(message_debug(902, args))
 
 # -----------------------------------------------------------------------------
 # Main
@@ -1171,7 +1203,7 @@ if __name__ == "__main__":
 
     # Configure logging. See https://docs.python.org/2/library/logging.html#levels
 
-    log_level_map = {
+    LOG_LEVEL_MAP = {
         "notset": logging.NOTSET,
         "debug": logging.DEBUG,
         "info": logging.INFO,
@@ -1181,9 +1213,9 @@ if __name__ == "__main__":
         "critical": logging.CRITICAL
     }
 
-    log_level_parameter = os.getenv("SENZING_LOG_LEVEL", "info").lower()
-    log_level = log_level_map.get(log_level_parameter, logging.INFO)
-    logging.basicConfig(format=log_format, level=log_level)
+    LOG_LEVEL_PARAMETER = os.getenv("SENZING_LOG_LEVEL", "info").lower()
+    LOG_LEVEL = LOG_LEVEL_MAP.get(LOG_LEVEL_PARAMETER, logging.INFO)
+    logging.basicConfig(format=LOG_FORMAT, level=LOG_LEVEL)
     logging.debug(message_debug(998))
 
     # Trap signals temporarily until args are parsed.
@@ -1193,42 +1225,42 @@ if __name__ == "__main__":
 
     # Parse the command line arguments.
 
-    subcommand = os.getenv("SENZING_SUBCOMMAND", None)
-    parser = get_parser()
+    SUBCOMMAND = os.getenv("SENZING_SUBCOMMAND", None)
+    PARSER = get_parser()
     if len(sys.argv) > 1:
-        args = parser.parse_args()
-        subcommand = args.subcommand
-    elif subcommand:
-        args = argparse.Namespace(subcommand=subcommand)
+        ARGS = PARSER.parse_args()
+        SUBCOMMAND = ARGS.subcommand
+    elif SUBCOMMAND:
+        ARGS = argparse.Namespace(subcommand=SUBCOMMAND)
     else:
-        parser.print_help()
-        if len(os.getenv("SENZING_DOCKER_LAUNCHED", "")):
-            subcommand = "sleep"
-            args = argparse.Namespace(subcommand=subcommand)
-            do_sleep(args)
+        PARSER.print_help()
+        if len(os.getenv("SENZING_DOCKER_LAUNCHED", "")) > 0:
+            SUBCOMMAND = "sleep"
+            ARGS = argparse.Namespace(subcommand=SUBCOMMAND)
+            do_sleep(ARGS)
         exit_silently()
 
     # Catch interrupts. Tricky code: Uses currying.
 
-    signal_handler = create_signal_handler_function(args)
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    SIGNAL_HANDLER = create_signal_handler_function(ARGS)
+    signal.signal(signal.SIGINT, SIGNAL_HANDLER)
+    signal.signal(signal.SIGTERM, SIGNAL_HANDLER)
 
     # Set global config for use by Flask.
 
-    config = get_configuration(args)
+    GLOBAL_CONFIG = get_configuration(ARGS, SUBCOMMAND)
 
     # Transform subcommand from CLI parameter to function name string.
 
-    subcommand_function_name = "do_{0}".format(subcommand.replace('-', '_'))
+    SUBCOMMAND_FUNCTION_NAME = "do_{0}".format(SUBCOMMAND.replace('-', '_'))
 
     # Test to see if function exists in the code.
 
-    if subcommand_function_name not in globals():
-        logging.warning(message_warning(696, subcommand))
-        parser.print_help()
+    if SUBCOMMAND_FUNCTION_NAME not in globals():
+        logging.warning(message_warning(696, SUBCOMMAND))
+        PARSER.print_help()
         exit_silently()
 
     # Tricky code for calling function based on string.
 
-    globals()[subcommand_function_name](args)
+    globals()[SUBCOMMAND_FUNCTION_NAME](ARGS)
