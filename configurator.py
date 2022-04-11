@@ -62,9 +62,9 @@ except:
 app = Flask(__name__)
 
 __all__ = []
-__version__ = "1.1.3"  # See https://www.python.org/dev/peps/pep-0396/
+__version__ = "1.1.5"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2022-03-22'
+__updated__ = '2022-04-11'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/master/lists/senzing-product-ids.md
 log_format = '%(asctime)s %(message)s'
@@ -742,7 +742,10 @@ class G2Client:
         response_bytearray = bytearray()
 
         try:
-            self.g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
+            if config.get('senzing_sdk_version_major') == 2:
+                self.g2_engine.searchByAttributesV2(data_as_json, flags, response_bytearray)
+            else:
+                self.g2_engine.searchByAttributes(data_as_json, response_bytearray, flags)
         except G2Exception as err:
             result = False
             logging.warning(message_warning(302, flags, err))
