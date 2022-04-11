@@ -276,7 +276,7 @@ MESSAGE_DICTIONARY = {
     "899": "{0}",
     "900": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}D",
     "901": "Signal: {0}; Frame: {1}",
-    "902": "Args: {0}; Frame: {1}",
+    "902": "Subcommand: {0}; Args: {1}",
     "998": "Debugging enabled.",
     "999": "{0}",
 }
@@ -466,7 +466,7 @@ def get_g2_database_url_specific(generic_database_url):
     return result
 
 
-def get_configuration(args, subcommand=None):
+def get_configuration(subcommand, args):
     ''' Order of precedence: CLI, OS environment variables, INI file, default. '''
     result = {}
 
@@ -1119,12 +1119,12 @@ def http_post_datasources():
 # -----------------------------------------------------------------------------
 
 
-def do_docker_acceptance_test(args):
+def do_docker_acceptance_test(subcommand, args):
     ''' For use with Docker acceptance testing. '''
 
     # Get context from CLI, environment variables, and ini files.
 
-    config = get_configuration(args)
+    config = get_configuration(subcommand, args)
 
     # Prolog.
 
@@ -1135,12 +1135,12 @@ def do_docker_acceptance_test(args):
     logging.info(exit_template(config))
 
 
-def do_service(args):
+def do_service(subcommand, args):
     ''' Run a Flask application to handle HTTP calls. '''
 
     # Get context from CLI, environment variables, and ini files.
 
-    config = get_configuration(args)
+    config = get_configuration(subcommand, args)
     common_prolog(config)
 
     host = config.get('host')
@@ -1156,12 +1156,12 @@ def do_service(args):
     logging.info(exit_template(config))
 
 
-def do_sleep(args):
+def do_sleep(subcommand, args):
     ''' Sleep.  Used for debugging. '''
 
     # Get context from CLI, environment variables, and ini files.
 
-    config = get_configuration(args)
+    config = get_configuration(subcommand, args)
 
     # Prolog.
 
@@ -1188,11 +1188,11 @@ def do_sleep(args):
     logging.info(exit_template(config))
 
 
-def do_version(args):
+def do_version(subcommand, args):
     ''' Log version information. '''
 
     logging.info(message_info(294, __version__, __updated__))
-    logging.debug(message_debug(902, args))
+    logging.debug(message_debug(902, subcommand, args))
 
 # -----------------------------------------------------------------------------
 # Main
@@ -1237,7 +1237,7 @@ if __name__ == "__main__":
         if len(os.getenv("SENZING_DOCKER_LAUNCHED", "")) > 0:
             SUBCOMMAND = "sleep"
             ARGS = argparse.Namespace(subcommand=SUBCOMMAND)
-            do_sleep(ARGS)
+            do_sleep(SUBCOMMAND, ARGS)
         exit_silently()
 
     # Catch interrupts. Tricky code: Uses currying.
@@ -1248,7 +1248,7 @@ if __name__ == "__main__":
 
     # Set global config for use by Flask.
 
-    GLOBAL_CONFIG = get_configuration(ARGS, SUBCOMMAND)
+    GLOBAL_CONFIG = get_configuration(SUBCOMMAND, ARGS)
 
     # Transform subcommand from CLI parameter to function name string.
 
@@ -1263,4 +1263,4 @@ if __name__ == "__main__":
 
     # Tricky code for calling function based on string.
 
-    globals()[SUBCOMMAND_FUNCTION_NAME](ARGS)
+    globals()[SUBCOMMAND_FUNCTION_NAME](SUBCOMMAND, ARGS)
