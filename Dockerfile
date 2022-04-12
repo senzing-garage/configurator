@@ -6,11 +6,11 @@ ARG BASE_IMAGE=debian:11.3-slim@sha256:78fd65998de7a59a001d792fe2d3a6d2ea25b6f3f
 
 FROM ${BASE_IMAGE} AS builder
 
-ENV REFRESHED_AT=2022-04-01
+ENV REFRESHED_AT=2022-04-11
 
 LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
-      Version="1.1.4"
+      Version="1.1.5"
 
 # Run as "root" for system installation.
 
@@ -45,11 +45,11 @@ RUN pip3 install --upgrade pip \
 
 FROM ${BASE_IMAGE} AS runner
 
-ENV REFRESHED_AT=2022-04-01
+ENV REFRESHED_AT=2022-04-11
 
 LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
-      Version="1.1.4"
+      Version="1.1.5"
 
 # Define health check.
 
