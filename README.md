@@ -118,7 +118,7 @@ This repository assumes a working knowledge of:
 ### Set environment variables
 
 1. :pencil2: Identify where
-   [senzing/yum](https://github.com/Senzing/docker-yum)
+   [senzing/apt](https://github.com/Senzing/docker-apt)
    placed the Senzing directories.
    Example:
 
