@@ -68,7 +68,7 @@ APP = Flask(__name__)
 __all__ = []
 __version__ = "1.1.5"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2022-04-11'
+__updated__ = '2022-08-01'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/main/lists/senzing-product-ids.md
 LOG_FORMAT = '%(asctime)s %(message)s'
@@ -242,7 +242,6 @@ MESSAGE_DEBUG = 900
 MESSAGE_DICTIONARY = {
     "100": "senzing-" + SENZING_PRODUCT_ID + "{0:04d}I",
     "101": "Adding datasource '{0}'. Response: {1}",
-    "102": "Adding entity type '{0}'",
     "104": "CONFIG_DATA_ID: {0} plus datasources: {1}",
     "105": "CONFIG_DATA_ID: {0} passed validity tests.",
     "292": "Configuration change detected.  Old: {0} New: {1}",
@@ -633,7 +632,6 @@ class G2Client:
         # Must run after instance variable are set.
 
         self.datasources = self.get_datasources()
-        self.entity_types = self.datasources.copy()
 
     def add_datasources(self, datasources):
         ''' Add a data source to G2 configuration. '''
@@ -945,7 +943,6 @@ def get_g2_config(config, g2_config_name="configurator-G2-config"):
 
         if config.get('senzing_sdk_version_major') == 2:
             result.addDataSource = result.addDataSourceV2
-            result.addEntityType = result.addEntityTypeV2
             result.init = result.initV2
             result.listDataSources = result.listDataSourcesV2
 
