@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=debian:11.4-slim@sha256:a811e62769a642241b168ac34f615fb02da863307a14c4432cea8e5a0f9782b8
+ARG BASE_IMAGE=debian:11.4-slim@sha256:68c1f6bae105595d2ebec1589d9d476ba2939fdb11eaba1daec4ea826635ce75
 
 # -----------------------------------------------------------------------------
 # Stage: builder
@@ -6,7 +6,7 @@ ARG BASE_IMAGE=debian:11.4-slim@sha256:a811e62769a642241b168ac34f615fb02da863307
 
 FROM ${BASE_IMAGE} AS builder
 
-ENV REFRESHED_AT=2022-08-12
+ENV REFRESHED_AT=2022-08-25
 
 LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
@@ -45,7 +45,7 @@ RUN pip3 install --upgrade pip \
 
 FROM ${BASE_IMAGE} AS runner
 
-ENV REFRESHED_AT=2022-08-12
+ENV REFRESHED_AT=2022-08-25
 
 LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
