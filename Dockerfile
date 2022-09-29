@@ -10,7 +10,7 @@ ENV REFRESHED_AT=2022-09-27
 
 LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
-      Version="1.1.5"
+      Version="1.1.6"
 
 # Run as "root" for system installation.
 
@@ -49,7 +49,7 @@ ENV REFRESHED_AT=2022-09-27
 
 LABEL Name="senzing/configurator" \
       Maintainer="support@senzing.com" \
-      Version="1.1.5"
+      Version="1.1.6"
 
 # Define health check.
 
