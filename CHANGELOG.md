@@ -19,20 +19,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed in 1.1.5
 
- - Migrate to Senzing V3 method signatures
+- Migrate to Senzing V3 method signatures
 
 ## [1.1.4] - 2022-04-01
 
 ### Changed in 1.1.4
 
- - Updated to Debian 11.3
+- Updated to Debian 11.3
 
 ## [1.1.3] - 2022-03-21
 
 ### Changed in 1.1.3
 
- - Support for `libcrypto` and `libssl`
- - Support for enhanced v3 python package styles
+- Support for `libcrypto` and `libssl`
+- Support for enhanced v3 python package styles
 
 ## [1.1.2] - 2022-02-09
 
