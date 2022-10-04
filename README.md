@@ -2,8 +2,9 @@
 
 ## Synopsis
 
-The [configurator.py](configuration.py) python script is used to configure Senzing.
-The `senzing/configurator` docker image is a wrapper for use in docker formations (e.g. docker-compose, kubernetes).
+The [configurator.py](configurator.py) python script is used to configure Senzing via HTTP.
+The [senzing/configurator](https://hub.docker.com/repository/docker/senzing/configurator)
+docker image is a wrapper for use in docker formations (e.g. docker-compose, kubernetes).
 
 ## Overview
 
