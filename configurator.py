@@ -66,9 +66,9 @@ APP = Flask(__name__)
 # Metadata
 
 __all__ = []
-__version__ = "1.1.6"  # See https://www.python.org/dev/peps/pep-0396/
+__version__ = "1.1.7"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2022-09-29'
+__updated__ = '2022-10-04'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/main/lists/senzing-product-ids.md
 LOG_FORMAT = '%(asctime)s %(message)s'
@@ -100,6 +100,11 @@ CONFIGURATION_LOCATOR = {
         "env": "SENZING_DEBUG",
         "cli": "debug"
     },
+    "engine_configuration_json": {
+        "default": None,
+        "env": "SENZING_ENGINE_CONFIGURATION_JSON",
+        "cli": "engine-configuration-json"
+    },
     "g2_database_url_generic": {
         "default": "sqlite3://na:na@/var/opt/senzing/sqlite/G2C.db",
         "env": "SENZING_DATABASE_URL",
@@ -120,6 +125,11 @@ CONFIGURATION_LOCATOR = {
         "env": "SENZING_PORT",
         "cli": "port"
     },
+    "resource_path": {
+        "default": "/opt/senzing/g2/resources",
+        "env": "SENZING_RESOURCE_PATH",
+        "cli": "resource-path"
+    },
     "sleep_time_in_seconds": {
         "default": 0,
         "env": "SENZING_SLEEP_TIME_IN_SECONDS",
@@ -139,6 +149,7 @@ CONFIGURATION_LOCATOR = {
 # Enumerate keys in 'configuration_locator' that should not be printed to the log.
 
 KEYS_TO_REDACT = [
+    "engine_configuration_json",
     "g2_database_url_generic",
     "g2_database_url_specific"
 ]
@@ -539,6 +550,7 @@ def get_configuration(subcommand, args):
 
     paths = [
         'config_path',
+        'resource_path',
         'support_path',
     ]
     for path in paths:
@@ -694,21 +706,29 @@ class G2Client:
 
     def get_g2_configuration_dictionary(self):
         ''' Construct a dictionary in the form of the old ini files. '''
-
         result = {
             "PIPELINE": {
+                "CONFIGPATH": self.config.get("config_path"),
+                "RESOURCEPATH": self.config.get("resource_path"),
                 "SUPPORTPATH": self.config.get("support_path"),
-                "CONFIGPATH": self.config.get("config_path")
             },
             "SQL": {
                 "CONNECTION": self.config.get("g2_database_url_specific"),
             }
         }
+        license_base64_encoded = self.config.get("license_base64_encoded")
+        if license_base64_encoded:
+            result["PIPELINE"]["LICENSESTRINGBASE64"] = license_base64_encoded
         return result
 
     def get_g2_configuration_json(self):
         ''' Return a JSON string with Senzing configuration. '''
-        return json.dumps(self.get_g2_configuration_dictionary())
+        result = ""
+        if self.config.get('engine_configuration_json'):
+            result = self.config.get('engine_configuration_json')
+        else:
+            result = json.dumps(self.get_g2_configuration_dictionary())
+        return result
 
     def persist_configuration(self, config_handle, configuration_comment=""):
         ''' Save configuration to the Senzing G2 database. '''
@@ -913,19 +933,28 @@ def get_g2_configuration_dictionary(config):
     ''' Construct a dictionary in the form of the old ini files. '''
     result = {
         "PIPELINE": {
+            "CONFIGPATH": config.get("config_path"),
+            "RESOURCEPATH": config.get("resource_path"),
             "SUPPORTPATH": config.get("support_path"),
-            "CONFIGPATH": config.get("config_path")
         },
         "SQL": {
             "CONNECTION": config.get("g2_database_url_specific"),
         }
     }
+    license_base64_encoded = config.get("license_base64_encoded")
+    if license_base64_encoded:
+        result["PIPELINE"]["LICENSESTRINGBASE64"] = license_base64_encoded
     return result
 
 
 def get_g2_configuration_json(config):
     ''' Return a JSON string with Senzing configuration. '''
-    return json.dumps(get_g2_configuration_dictionary(config))
+    result = ""
+    if config.get('engine_configuration_json'):
+        result = config.get('engine_configuration_json')
+    else:
+        result = json.dumps(get_g2_configuration_dictionary(config))
+    return result
 
 
 def get_g2_config(config, g2_config_name="configurator-G2-config"):
