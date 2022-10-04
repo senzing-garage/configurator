@@ -100,7 +100,7 @@ To see the options for a subcommand, run commands like:
    Example:
 
     ```console
-    export SENZING_SQL_CONNECTION="postgresql://username:password@hostname:5432:G2/"
+    export SENZING_DATABASE_URL="postgresql://username:password@hostname:5432/G2"
     ```
 
 ### Run docker container
@@ -110,13 +110,13 @@ To see the options for a subcommand, run commands like:
 
     ```console
     sudo docker run \
-      --env SENZING_SQL_CONNECTION \
+      --env SENZING_DATABASE_URL \
       --publish 8253:8253 \
       --rm \
       senzing/configurator
     ```
 
-1. The running app is viewable at [localhost:8253](http://localhost:8253).
+1. To try it out, see [Test](#test).
 
 ## Demonstrate using docker-compose
 
@@ -176,7 +176,7 @@ To see the options for a subcommand, run commands like:
     docker-compose -f ${SENZING_VOLUME}/docker-compose.yaml up
     ```
 
-1. The running app is viewable at [localhost:8356](http://localhost:8256).
+1. To try it out, see [Test](#test).
 
 ## Demonstrate using Command Line
 
@@ -227,6 +227,9 @@ To see the options for a subcommand, run commands like:
     cd ${GIT_REPOSITORY_DIR}
     ./configurator.py service
     ```
+
+1. To try it out, see [Test](#test).
+
 
 ## Demonstrate using Helm
 
