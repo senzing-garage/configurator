@@ -114,6 +114,7 @@ To see the options for a subcommand, run commands like:
       --publish 8253:8253 \
       --rm \
       senzing/configurator
+
     ```
 
 1. To try it out, see [Test](#test).
@@ -127,6 +128,7 @@ To see the options for a subcommand, run commands like:
 
     ```console
     export SENZING_VOLUME=~/my-senzing
+
     ```
 
 1. Create directories.
@@ -140,6 +142,7 @@ To see the options for a subcommand, run commands like:
     export SENZING_GID=$(id -g)
     mkdir -p ${PGADMIN_DIR} ${POSTGRES_DIR} ${RABBITMQ_DIR}
     chmod -R 777 ${SENZING_VOLUME}
+
     ```
 
 1. Download artifacts.
@@ -153,6 +156,7 @@ To see the options for a subcommand, run commands like:
     wget \
       -O ${SENZING_VOLUME}/docker-compose.yaml \
       "https://raw.githubusercontent.com/Senzing/configurator/main/docker-compose.yaml"
+
     ```
 
 ### Prerequisite docker-compose stack
@@ -163,6 +167,7 @@ To see the options for a subcommand, run commands like:
     ```console
     docker-compose -f ${SENZING_VOLUME}/docker-compose-backing-services-only.yaml pull
     docker-compose -f ${SENZING_VOLUME}/docker-compose-backing-services-only.yaml up
+
     ```
 
 ### Bring up docker-compose stack
@@ -174,6 +179,7 @@ To see the options for a subcommand, run commands like:
     ```console
     docker-compose -f ${SENZING_VOLUME}/docker-compose.yaml pull
     docker-compose -f ${SENZING_VOLUME}/docker-compose.yaml up
+
     ```
 
 1. To try it out, see [Test](#test).
@@ -215,6 +221,7 @@ To see the options for a subcommand, run commands like:
     export SENZING_SUPPORT_PATH=${SENZING_DATA_VERSION_DIR}
     export PYTHONPATH=${SENZING_G2_DIR}/python
     export LD_LIBRARY_PATH=${SENZING_G2_DIR}/lib:${SENZING_G2_DIR}/lib/debian
+
     ```
 
 ### Run command
@@ -226,6 +233,7 @@ To see the options for a subcommand, run commands like:
     ```console
     cd ${GIT_REPOSITORY_DIR}
     ./configurator.py service
+
     ```
 
 1. To try it out, see [Test](#test).
