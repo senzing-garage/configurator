@@ -13,7 +13,7 @@ services:
           },
           "SQL": {
             "BACKEND": "SQL",
-            "CONNECTION": "${SENZING_SQL_CONNECTION:-postgresql://postgres:postgres@senzing-postgres:5432:G2/"
+            "CONNECTION": "${SENZING_SQL_CONNECTION:-postgresql://postgres:postgres@senzing-postgres:5432:G2/}"
           }
         }
     image: senzing/configurator:${SENZING_DOCKER_IMAGE_VERSION_CONFIGURATOR:-latest}
