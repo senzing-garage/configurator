@@ -96,7 +96,7 @@ To see the options for a subcommand, run commands like:
 
 ### Set environment variables
 
-1. Construct Senzing SQL Connection.
+1. Construct URL to database containing Senzing data.
    Example:
 
     ```console
@@ -109,7 +109,7 @@ To see the options for a subcommand, run commands like:
    Example:
 
     ```console
-    sudo docker run \
+    docker run \
       --env SENZING_DATABASE_URL \
       --publish 8253:8253 \
       --rm \
