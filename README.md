@@ -238,7 +238,6 @@ To see the options for a subcommand, run commands like:
 
 1. To try it out, see [Test](#test).
 
-
 ## Demonstrate using Helm
 
 ### Prerequisite software for Helm demonstration
