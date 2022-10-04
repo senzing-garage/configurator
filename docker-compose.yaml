@@ -2,9 +2,7 @@ version: '3'
 services:
 
   configurator:
-    container_name: senzing-configurator
     environment:
-#     See https://github.com/Senzing/configurator#configuration
       SENZING_ENGINE_CONFIGURATION_JSON: >-
         {
           "PIPELINE": {
