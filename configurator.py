@@ -66,9 +66,9 @@ APP = Flask(__name__)
 # Metadata
 
 __all__ = []
-__version__ = "1.1.7"  # See https://www.python.org/dev/peps/pep-0396/
+__version__ = "1.1.8"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
-__updated__ = '2022-10-04'
+__updated__ = '2022-10-11'
 
 SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/main/lists/senzing-product-ids.md
 LOG_FORMAT = '%(asctime)s %(message)s'
