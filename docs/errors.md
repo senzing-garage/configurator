@@ -1,1 +1,1 @@
-## Errors
+# configurator errors
