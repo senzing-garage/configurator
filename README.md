@@ -215,6 +215,7 @@ To see the options for a subcommand, run commands like:
 
 ## Configuration
 
+
 Configuration values specified by environment variable or command line parameter.
 
 - **[SENZING_DATABASE_URL](https://github.com/Senzing/knowledge-base/blob/main/lists/environment-variables.md#senzing_database_url)**
