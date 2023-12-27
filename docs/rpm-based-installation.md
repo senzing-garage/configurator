@@ -18,7 +18,7 @@ image.
 
 The following software programs need to be installed:
 
-1. [git](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/git.md)
+1. [git](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/git.md)
 
 ## Clone repository
 
@@ -31,7 +31,7 @@ The following software programs need to be installed:
     export GIT_REPOSITORY_DIR="${GIT_ACCOUNT_DIR}/${GIT_REPOSITORY}"
     ```
 
-1. Follow steps in [clone-repository](https://github.com/Senzing/knowledge-base/blob/main/HOWTO/clone-repository.md) to install the Git repository.
+1. Follow steps in [clone-repository](https://github.com/senzing-garage/knowledge-base/blob/main/HOWTO/clone-repository.md) to install the Git repository.
 
 ## Set Environment variables
 

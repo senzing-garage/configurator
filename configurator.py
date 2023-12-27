@@ -70,7 +70,7 @@ __version__ = "1.1.9"  # See https://www.python.org/dev/peps/pep-0396/
 __date__ = '2019-09-06'
 __updated__ = '2023-04-03'
 
-SENZING_PRODUCT_ID = "5009"  # See https://github.com/Senzing/knowledge-base/blob/main/lists/senzing-product-ids.md
+SENZING_PRODUCT_ID = "5009"  # See https://github.com/senzing-garage/knowledge-base/blob/main/lists/senzing-product-ids.md
 LOG_FORMAT = '%(asctime)s %(message)s'
 
 # Working with bytes.
@@ -222,7 +222,7 @@ def get_parser():
         },
     }
 
-    parser = argparse.ArgumentParser(prog="configurator.py", description="Perform Senzing configuration. For more information, see https://github.com/Senzing/configurator")
+    parser = argparse.ArgumentParser(prog="configurator.py", description="Perform Senzing configuration. For more information, see https://github.com/senzing-garage/configurator")
     subparsers = parser.add_subparsers(dest='subcommand', help='Subcommands (SENZING_SUBCOMMAND):')
 
     for subcommand_key, subcommand_values in subcommands.items():
@@ -256,7 +256,7 @@ MESSAGE_DICTIONARY = {
     "104": "CONFIG_DATA_ID: {0} plus datasources: {1}",
     "105": "CONFIG_DATA_ID: {0} passed validity tests.",
     "292": "Configuration change detected.  Old: {0} New: {1}",
-    "293": "For information on warnings and errors, see https://github.com/Senzing/configurator#errors",
+    "293": "For information on warnings and errors, see https://github.com/senzing-garage/configurator#errors",
     "294": "Version: {0}  Updated: {1}",
     "295": "Sleeping infinitely.",
     "296": "Sleeping {0} seconds.",

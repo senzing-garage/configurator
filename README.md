@@ -1,5 +1,17 @@
 # configurator
 
+If you are beginning your journey with
+[Senzing](https://senzing.com/),
+please start with
+[Senzing Quick Start guides](https://docs.senzing.com/quickstart/).
+
+You are in the
+[Senzing Garage](https://github.com/senzing-garage)
+where projects are "tinkered" on.
+Although this GitHub repository may help you understand an approach to using Senzing,
+it's not considered to be "production ready" and is not considered to be part of the Senzing product.
+Heck, it may not even be appropriate for your application of Senzing!
+
 ## Synopsis
 
 The [configurator.py](configurator.py) python script is used to configure Senzing via HTTP.
@@ -15,7 +27,7 @@ $ ./configurator.py
 usage: configurator.py [-h] {service,sleep,version,docker-acceptance-test} ...
 
 Perform Senzing configuration. For more information, see
-https://github.com/Senzing/configurator
+https://github.com/senzing-garage/configurator
 
 positional arguments:
   {service,sleep,version,docker-acceptance-test}
@@ -65,7 +77,7 @@ To see the options for a subcommand, run commands like:
 - **Space:** This repository and demonstration require 6 GB free disk space.
 - **Time:** Budget 40 minutes to get the demonstration up-and-running, depending on CPU and network speeds.
 - **Background knowledge:** This repository assumes a working knowledge of:
-  - [Docker](https://github.com/Senzing/knowledge-base/blob/main/WHATIS/docker.md)
+  - [Docker](https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/docker.md)
 
 ## Demonstrate using Docker
 
@@ -170,7 +182,7 @@ To see the options for a subcommand, run commands like:
 ### Set environment variables for command line
 
 1. :pencil2: Identify where
-   [senzing/apt](https://github.com/Senzing/docker-apt)
+   [senzing/apt](https://github.com/senzing-garage/docker-apt)
    placed the Senzing directories.
    Example:
 
@@ -217,9 +229,9 @@ To see the options for a subcommand, run commands like:
 
 Configuration values specified by environment variable or command line parameter.
 
-- **[SENZING_DATABASE_URL](https://github.com/Senzing/knowledge-base/blob/main/lists/environment-variables.md#senzing_database_url)**
-- **[SENZING_DEBUG](https://github.com/Senzing/knowledge-base/blob/main/lists/environment-variables.md#senzing_debug)**
-- **[SENZING_SUBCOMMAND](https://github.com/Senzing/knowledge-base/blob/main/lists/environment-variables.md#senzing_subcommand)**
+- **[SENZING_DATABASE_URL](https://github.com/senzing-garage/knowledge-base/blob/main/lists/environment-variables.md#senzing_database_url)**
+- **[SENZING_DEBUG](https://github.com/senzing-garage/knowledge-base/blob/main/lists/environment-variables.md#senzing_debug)**
+- **[SENZING_SUBCOMMAND](https://github.com/senzing-garage/knowledge-base/blob/main/lists/environment-variables.md#senzing_subcommand)**
 
 ## References
 
@@ -228,4 +240,4 @@ Configuration values specified by environment variable or command line parameter
 1. [Examples](docs/examples.md)
 1. Related artifacts:
     1. [DockerHub](https://hub.docker.com/r/senzing/configurator)
-    1. [Helm Chart](https://github.com/Senzing/charts/tree/main/charts/senzing-configurator)
+    1. [Helm Chart](https://github.com/senzing-garage/charts/tree/main/charts/senzing-configurator)
