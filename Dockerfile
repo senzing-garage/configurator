@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=senzing/senzingapi-runtime:3.9.0
+ARG BASE_IMAGE=senzing/senzingapi-runtime:3.10.1
 
 # -----------------------------------------------------------------------------
 # Stage: builder
@@ -6,11 +6,11 @@ ARG BASE_IMAGE=senzing/senzingapi-runtime:3.9.0
 
 FROM ${BASE_IMAGE} AS builder
 
-ENV REFRESHED_AT=2024-03-18
+ENV REFRESHED_AT=2024-05-22
 
 LABEL Name="senzing/configurator" \
-      Maintainer="support@senzing.com" \
-      Version="1.1.9"
+  Maintainer="support@senzing.com" \
+  Version="1.1.11"
 
 # Run as "root" for system installation.
 
@@ -19,12 +19,12 @@ USER root
 # Install packages via apt.
 
 RUN apt-get update \
- && apt-get -y install \
-      python3 \
-      python3-dev \
-      python3-pip \
-      python3-venv \
- && rm -rf /var/lib/apt/lists/*
+  && apt-get -y install \
+  python3 \
+  python3-dev \
+  python3-pip \
+  python3-venv \
+  && rm -rf /var/lib/apt/lists/*
 
 # Create and activate virtual environment.
 
@@ -35,8 +35,8 @@ ENV PATH="/app/venv/bin:$PATH"
 
 COPY requirements.txt .
 RUN pip3 install --upgrade pip \
- && pip3 install -r requirements.txt \
- && rm requirements.txt
+  && pip3 install -r requirements.txt \
+  && rm requirements.txt
 
 # -----------------------------------------------------------------------------
 # Stage: Final
@@ -46,11 +46,11 @@ RUN pip3 install --upgrade pip \
 
 FROM ${BASE_IMAGE} AS runner
 
-ENV REFRESHED_AT=2024-03-18
+ENV REFRESHED_AT=2024-05-22
 
 LABEL Name="senzing/configurator" \
-      Maintainer="support@senzing.com" \
-      Version="1.1.9"
+  Maintainer="support@senzing.com" \
+  Version="1.1.11"
 
 # Define health check.
 
@@ -63,15 +63,15 @@ USER root
 # Install packages via apt.
 
 RUN apt-get update \
- && apt-get -y install \
-      librdkafka-dev \
-      libssl1.1 \
-      libxml2 \
-      postgresql-client \
-      python3 \
-      python3-venv \
-      unixodbc \
- && rm -rf /var/lib/apt/lists/*
+  && apt-get -y install \
+  librdkafka-dev \
+  libssl1.1 \
+  libxml2 \
+  postgresql-client \
+  python3 \
+  python3-venv \
+  unixodbc \
+  && rm -rf /var/lib/apt/lists/*
 
 # Copy files from repository.
 
