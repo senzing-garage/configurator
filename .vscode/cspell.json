@@ -1,0 +1,47 @@
+{
+  // Version of the setting file.  Always 0.2
+  "version": "0.2",
+  // language - current active spelling language
+  "language": "en",
+  // words - list of words to be always considered correct
+  "words": [
+      "Senzing",
+      "CODEOWNER",
+      "ICLA",
+      "CCLA",
+      "PYTHONPATH",
+      "RABBITMQ",
+      "PGADMIN",
+      "configurator",
+      "alnum",
+      "toplevel",
+      "senzingapi",
+      "venv",
+      "librdkafka",
+      "unixodbc",
+      "rootfs",
+      "clidriver",
+      "PYTHONUNBUFFERED",
+      "SUPPORTPATH",
+      "RESOURCEPATH",
+      "LICENSESTRINGBASE",
+      "CONFIGPATH",
+      "stackoverflow",
+      "reinit",
+      "DSRC",
+      "astring",
+      "libcrypto",
+      "pylint",
+      "pydev",
+      "pydevproject",
+      "buildx",
+      "DOCKERHUB",
+      "analysing"
+  ],
+  "ignorePaths": [
+    ".git/**",
+    ".gitignore",
+    ".mypy_cache",
+    ".vscode/cspell.json"
+  ]
+}
